@@ -11,7 +11,7 @@
       :style="{ 'max-width': inputWidth - 32 + 'px', width: '100%' }">
       <span v-if="collapseTags && selected.length">
         <el-tag
-          :closable="tagClosable"
+          :closable="closable ? closable(item.value): tagClosable"
           :size="tagProps.size || collapseTagSize"
           :hit="selected[0].hitState"
           :type="tagProps.type || 'info'"
@@ -34,7 +34,7 @@
         <el-tag
           v-for="item in selected"
           :key="getValueKey(item)"
-          :closable="tagClosable"
+          :closable="closable ? closable(item.value): tagClosable"
           :size="tagProps.size || collapseTagSize"
           :hit="item.hitState"
           :type="tagProps.type || 'info'"
@@ -336,6 +336,10 @@
       noEmptyText: {
         type: [ String, Boolean ],
         default: false
+      },
+      closable: {
+        type: Function,
+        default: undefined
       }
     },
 
