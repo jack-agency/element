@@ -41,7 +41,9 @@
           @close="deleteTag($event, item)"
           disable-transitions
           v-bind="tagProps">
-          <span class="el-select__tags-text">{{ isObject(item[tagLabelKey]) ? item[tagLabelKey][valueKey] : item[tagLabelKey] }}</span>
+          <slot name="tag" v-bind="{ item: item.value }">
+            <span class="el-select__tags-text">{{ isObject(item[tagLabelKey]) ? item[tagLabelKey][valueKey] : item[tagLabelKey] }}</span>
+          </slot>
         </el-tag>
       </transition-group>
 
