@@ -15,10 +15,15 @@
           :size="tagProps.size || collapseTagSize"
           :hit="selected[0].hitState"
           :type="tagProps.type || 'info'"
+          @click.stop="editTag($event, selected[0])"
           @close="deleteTag($event, selected[0])"
           disable-transitions
           v-bind="tagProps">
-          <span class="el-select__tags-text">{{ isObject(selected[0][tagLabelKey]) ? selected[0][tagLabelKey][valueKey] : selected[0][tagLabelKey] }}</span>
+          <span class="el-select__tags-text">
+              <slot name="tag" v-bind="item[tagLabelKey]">
+                {{ isObject(selected[0][tagLabelKey]) ? selected[0][tagLabelKey][valueKey] : selected[0][tagLabelKey] }}
+              </slot>
+          </span>
         </el-tag>
         <el-tag
           v-if="selected.length > 1"
@@ -38,6 +43,7 @@
           :size="tagProps.size || collapseTagSize"
           :hit="item.hitState"
           :type="tagProps.type || 'info'"
+          @click.stop="editTag($event, item)"
           @close="deleteTag($event, item)"
           disable-transitions
           v-bind="tagProps">
@@ -821,6 +827,15 @@
         }
         event.stopPropagation();
       },
+
+      editTag(event, tag) {
+        console.log('wouhou')
+        let index = this.selected.indexOf(tag);
+        if (index > -1 && !this.selectDisabled) {
+          this.$emit('edit-tag', tag.value);
+        }
+        event.stopPropagation();
+      }
 
       onInputChange() {
         if (this.filterable && this.query !== this.selectedLabel) {
