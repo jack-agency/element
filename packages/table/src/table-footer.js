@@ -66,9 +66,7 @@ export default {
                 class={ [...this.getRowClasses(column, cellIndex), 'el-table__cell'] }>
                 <div class={ ['cell', column.labelClassName] }>
                   {
-                    typeof sums[cellIndex] === 'function'
-                      ? sums[cellIndex].call(this)
-                      : sums[cellIndex]
+                    sums[cellIndex]
                   }
                 </div>
               </td>)
