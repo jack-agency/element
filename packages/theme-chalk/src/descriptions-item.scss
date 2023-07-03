@@ -1,8 +1,7 @@
+///VAR @import 'common/var';
 @import 'mixins/mixins';
-@import 'common/var';
 
 @include b(descriptions-item) {
-  
   @include e(container) {
     display: flex;
   }
