@@ -427,7 +427,7 @@ const formatStringToDateString = (string, format) => {
   });
 
   return formattedResult;
-}
+};
 
 export default {
   mixins: [Emitter, NewPopper],
@@ -794,8 +794,8 @@ export default {
     handleChange() {
       if (this.userInput) {
         let value;
-        if ( this.type === 'date' && this.userInput.match(/^\d+$/)) {
-          value = this.parseString(formatStringToDateString(this.userInput, this.format))
+        if (this.type === 'date' && this.userInput.match(/^\d+$/)) {
+          value = this.parseString(formatStringToDateString(this.userInput, this.format));
         } else {
           value = this.parseString(this.userInput);
         }
@@ -1143,7 +1143,7 @@ export default {
 
     deletePrevTag(e) {
       if (!this.tagsVisible) {
-        return
+        return;
       }
 
       e.preventDefault();
