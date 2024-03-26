@@ -166,6 +166,23 @@
           </div>
         </div>
       </div>
+      <div class="el-picker-panel__footer">
+        <el-button
+          size="mini"
+          type="text"
+          class="el-picker-panel__link-btn"
+          @click="handleClear">
+          {{ t('el.datepicker.clear') }}
+        </el-button>
+        <el-button
+          plain
+          size="mini"
+          class="el-picker-panel__link-btn"
+          :disabled="btnDisabled"
+          @click="handleConfirm(false)">
+          {{ t('el.datepicker.confirm') }}
+        </el-button>
+      </div>
     </div>
   </transition>
 </template>
@@ -209,6 +226,9 @@
     directives: { Clickoutside },
 
     computed: {
+      btnDisabled() {
+        return !(this.minDate && this.maxDate && !this.selecting && this.isValidValue([this.minDate, this.maxDate]));
+      },
       leftLabel() {
         return this.leftDate.getFullYear() + ' ' + this.t('el.datepicker.year') + ' ' + this.t(`el.datepicker.month${ this.leftDate.getMonth() + 1 }`);
       },
@@ -419,7 +439,13 @@
     },
 
     methods: {
-
+      handleClear() {
+        this.minDate = null;
+        this.maxDate = null;
+        this.leftDate = calcDefaultValue(this.defaultValue)[0];
+        this.rightDate = nextMonth(this.leftDate);
+        this.$emit('pick', null);
+      },
       handleChangeRange(val) {
         this.minDate = val.minDate;
         this.maxDate = val.maxDate;
@@ -533,7 +559,8 @@
         }
       },
 
-      handleMinTimePick(value, visible, first) {        this.minDate = this.minDate || new Date();
+      handleMinTimePick(value, visible, first) {
+        this.minDate = this.minDate || new Date();
         if (value) {
           this.minDate = modifyTime(this.minDate, value.getHours(), value.getMinutes(), value.getSeconds());
         }
@@ -545,7 +572,7 @@
         if (!this.maxDate || this.maxDate && this.maxDate.getTime() < this.minDate.getTime()) {
           this.maxDate = new Date(this.minDate);
         }
-        this.handleConfirm(true)
+        this.handleConfirm(true);
       },
 
       handleMinTimeClose() {
@@ -564,7 +591,7 @@
         if (this.maxDate && this.minDate && this.minDate.getTime() > this.maxDate.getTime()) {
           this.minDate = new Date(this.maxDate);
         }
-        this.handleConfirm(true)
+        this.handleConfirm(true);
       },
 
       handleMaxTimeClose() {
