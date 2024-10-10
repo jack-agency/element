@@ -27,7 +27,7 @@
       <input
         tabindex="0"
         @focus="handleFocus"
-        @input="event => userInput = event.target.value"
+        @input="handleInput"
         @keydown.delete="deletePrevTag"
         @keydown="handleKeydown"
         ref="input"
@@ -91,7 +91,7 @@
       v-bind="firstInputId"
       :readonly="!editable || readonly"
       :name="name && name[0]"
-      @input="handleStartInput"
+      @input="handleRangeInput($event, { start: true })"
       @change="handleStartChange"
       @focus="handleFocus"
       class="el-range-input">
@@ -106,7 +106,7 @@
       v-bind="secondInputId"
       :readonly="!editable || readonly"
       :name="name && name[1]"
-      @input="handleEndInput"
+      @input="handleRangeInput($event, { end: true })"
       @change="handleEndChange"
       @focus="handleFocus"
       class="el-range-input">
@@ -428,6 +428,7 @@ const formatStringToDateString = (string, format) => {
 
   return formattedResult;
 }
+const timeFlags = /[adDhHmMsSy]/;
 
 export default {
   mixins: [Emitter, NewPopper],
@@ -520,7 +521,8 @@ export default {
       ready: false,
       inputWidth: 0,
       inputLength: 20,
-      inputInitialHeight: 28
+      inputInitialHeight: 28,
+      carretPosition: 0
     };
   },
 
@@ -816,19 +818,42 @@ export default {
       }
     },
 
-    handleStartInput(event) {
-      if (this.userInput) {
-        this.userInput = [event.target.value, this.userInput[1]];
-      } else {
-        this.userInput = [event.target.value, null];
-      }
-    },
+    handleRangeInput(event, { start = false, end = false }) {
+      const value = event.target.value;
+      const format = this.format || DEFAULT_FORMATS[this.type.replace('range', '')];
+      let output = '';
 
-    handleEndInput(event) {
-      if (this.userInput) {
-        this.userInput = [this.userInput[0], event.target.value];
+      if (value && value.length) {
+        const rawInput = value.match(/([0-9]+)/g).join('');
+        output = this.rawInputToFormat(rawInput, format);
+        if (this.carretPosition >= 0) {
+          this.carretPosition++;
+          if (!timeFlags.test(format[this.carretPosition]) || !timeFlags.test(format[this.carretPosition - 1])) {
+            this.carretPosition++;
+          }
+        } else {
+          this.carretPosition = -this.carretPosition - 1;
+        }
+        this.$nextTick(_ => {
+          event.target.focus();
+          event.target.setSelectionRange(this.carretPosition, this.carretPosition);
+        });
+      }
+
+      if (start) {
+        if (this.userInput) {
+          this.userInput = [output, this.userInput[1]];
+        } else {
+          this.userInput = [output, null];
+        }
+      } else if (end) {
+        if (this.userInput) {
+          this.userInput = [this.userInput[0], output];
+        } else {
+          this.userInput = [null, output];
+        }
       } else {
-        this.userInput = [null, event.target.value];
+        this.userInput = [];
       }
     },
 
@@ -901,8 +926,33 @@ export default {
       this.$emit('focus', this);
     },
 
+    handleInput(value) {
+      const format = this.format || DEFAULT_FORMATS[this.type.replace('range', '')];
+
+      if (value && value.length) {
+        const rawInput = value.match(/([0-9]+)/g).join('');
+        this.userInput = this.rawInputToFormat(rawInput, format);
+        if (this.carretPosition >= 0) {
+          this.carretPosition++;
+          if (!timeFlags.test(format[this.carretPosition]) || !timeFlags.test(format[this.carretPosition - 1])) {
+            this.carretPosition++;
+          }
+        } else {
+          this.carretPosition = -this.carretPosition - 1;
+        }
+        this.$nextTick(_ => {
+          this.refInput[0].focus();
+          this.refInput[0].setSelectionRange(this.carretPosition, this.carretPosition);
+        });
+      } else {
+        this.userInput = '';
+      }
+    },
+
     handleKeydown(event) {
       const keyCode = event.keyCode;
+
+      this.carretPosition = event.target.selectionStart;
 
       // ESC
       if (keyCode === 27) {
@@ -940,6 +990,10 @@ export default {
         }
         event.stopPropagation();
         return;
+      }
+
+      if (keyCode === 8) {
+        this.carretPosition *= -1;
       }
 
       // if user is typing, do not let picker handle key input
@@ -1160,6 +1214,22 @@ export default {
           this.deleteTag(index);
         }
       }
+    },
+
+    rawInputToFormat(raw, format) {
+      let charIndex = 0;
+      let formatIndex = 0;
+      const output = [];
+      const formatArray = format.split('');
+      while (raw[charIndex] && formatArray[formatIndex]) {
+        if (timeFlags.test(formatArray[formatIndex])) {
+          output.push(raw[charIndex++]);
+        } else {
+          output.push(formatArray[formatIndex]);
+        }
+        formatIndex++;
+      }
+      return output.join('');
     }
   }
 };
