@@ -65,5 +65,6 @@
   "tabs": "./packages/tabs/index.js",
   "tag": "./packages/tag/index.js",
   "tooltip": "./packages/tooltip/index.js",
-  "tree": "./packages/tree/index.js"
+  "tree": "./packages/tree/index.js",
+  "slider": "./packages/slider/index.js"
 }
