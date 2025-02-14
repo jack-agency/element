@@ -8,6 +8,7 @@ export default {
 
   render(h) {
     let sums = [];
+    let trLines = [];
     if (this.summaryMethod) {
       sums = this.summaryMethod({ columns: this.columns, data: this.store.states.data });
     } else {
@@ -42,6 +43,12 @@ export default {
       });
     }
 
+    if (Array.isArray(sums) && sums.length >= 1 && sums.every(sum => Array.isArray(sum))) {
+      trLines = sums.map(sum => ({ sums: [].concat(sum) }));
+    } else {
+      trLines = [ { sums } ];
+    }
+
     return (
       <table
         class="el-table__footer"
@@ -57,24 +64,26 @@ export default {
           }
         </colgroup>
         <tbody class={ [{ 'has-gutter': this.hasGutter }] }>
-          <tr>
-            {
-              this.columns.map((column, cellIndex) => <td
-                key={cellIndex}
-                colspan={ column.colSpan }
-                rowspan={ column.rowSpan }
-                class={ [...this.getRowClasses(column, cellIndex), 'el-table__cell'] }>
-                <div class={ ['cell', column.labelClassName] }>
-                  {
-                    sums[cellIndex]
-                  }
-                </div>
-              </td>)
-            }
-            {
-              this.hasGutter ? <th class="el-table__cell gutter"></th> : ''
-            }
-          </tr>
+          {
+            trLines.map(trLine => <tr>
+              {
+                this.columns.map((column, cellIndex) => <td
+                  key={cellIndex}
+                  colspan={ column.colSpan }
+                  rowspan={ column.rowSpan }
+                  class={ [...this.getRowClasses(column, cellIndex), 'el-table__cell'] }>
+                  <div class={ ['cell', column.labelClassName] }>
+                    {
+                      trLine.sums[cellIndex]
+                    }
+                  </div>
+                </td>)
+              }
+              {
+                this.hasGutter ? <th class="el-table__cell gutter"></th> : ''
+              }
+            </tr>)
+          }
         </tbody>
       </table>
     );
