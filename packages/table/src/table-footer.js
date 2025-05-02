@@ -67,17 +67,40 @@ export default {
           {
             trLines.map(trLine => <tr>
               {
-                this.columns.map((column, cellIndex) => <td
-                  key={cellIndex}
-                  colspan={ column.colSpan }
-                  rowspan={ column.rowSpan }
-                  class={ [...this.getRowClasses(column, cellIndex), 'el-table__cell'] }>
-                  <div class={ ['cell', column.labelClassName] }>
-                    {
-                      trLine.sums[cellIndex]
-                    }
-                  </div>
-                </td>)
+                this.columns.map((column, cellIndex) => {
+                  const row = trLine.sums[cellIndex];
+
+                  // we can specify the colspan for the footer independently from the table header/body
+                  // if the row returns an object with a colspan key, assume its to change the colspan
+                  // to specify the value with the colspan, you must specify the value key containing the desired value
+                  // otherwise it will fallback to the column colspan from spanMethod and read the value from the sums index
+                  const colspan = !!row && (typeof row === 'object' && !Array.isArray(row) && row !== undefined)
+                    ? (row.colspan !== undefined ? row.colspan : column.colSpan)
+                    : column.colSpan;
+
+                  const colvalue = !!row && (typeof row === 'object' && !Array.isArray(row) && row !== undefined)
+                    ? (row.value !== undefined ? row.value : row)
+                    : row;
+
+                  // remove the column when the colspan is set to 0
+                  // this prevent larger columns from pushing content outside the table
+                  if (colspan === 0) {
+                    return;
+                  }
+
+                  return (<td
+                    key={cellIndex}
+                    colspan={ colspan }
+                    rowspan={ column.rowSpan }
+                    class={ [...this.getRowClasses(column, cellIndex), 'el-table__cell'] }
+                  >
+                    <div class={ ['cell', column.labelClassName] }>
+                      {
+                        colvalue
+                      }
+                    </div>
+                  </td>);
+                }).filter(Boolean)
               }
               {
                 this.hasGutter ? <th class="el-table__cell gutter"></th> : ''
