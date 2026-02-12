@@ -78,15 +78,19 @@ export default {
                     ? (row.colspan !== undefined ? row.colspan : column.colSpan)
                     : column.colSpan;
 
-                  const colvalue = !!row && (typeof row === 'object' && !Array.isArray(row) && row !== undefined)
-                    ? (row.value !== undefined ? row.value : row)
-                    : row;
-
                   // remove the column when the colspan is set to 0
                   // this prevent larger columns from pushing content outside the table
                   if (colspan === 0) {
                     return;
                   }
+
+                  const colvalue = !!row && (typeof row === 'object' && !Array.isArray(row) && row !== undefined)
+                    ? (row.value !== undefined ? row.value : row)
+                    : row;
+
+                  const cellClass = !!row && (typeof row === 'object' && !Array.isArray(row) && row !== undefined)
+                    ? (row.cellClassName !== undefined ? row.cellClassName : column.cellClassName)
+                    : null;
 
                   return (<td
                     key={cellIndex}
@@ -94,7 +98,7 @@ export default {
                     rowspan={ column.rowSpan }
                     class={ [...this.getRowClasses(column, cellIndex), 'el-table__cell'] }
                   >
-                    <div class={ ['cell', column.labelClassName] }>
+                    <div class={ ['cell', cellClass, column.labelClassName] }>
                       {
                         colvalue
                       }
